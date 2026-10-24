@@ -82,8 +82,8 @@ let signalingChannel = null;
 // ==========================================
 // 3. SUPABASE & WEBRTC AYARLARI
 // ==========================================
-const supabaseUrl = 'https://roiwxcecevfigomtopgb.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvaXd4Y2VjZXZmaWdvbXRvcGdiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzODYyNDEsImV4cCI6MjA5OTk2MjI0MX0.3RRbvEjWXjTBFlgNXyMGGhcKWvlaApqQieEgA7hLJMY';
+const supabaseUrl = 'https://bvbtrehgotptrzplylsv.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2YnRyZWhnb3RwdHJ6cGx5bHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4NjAyNjQsImV4cCI6MjEwODQzNjI2NH0.o_tcJd346EZAUo-t7LWDziTN3AMQZEElSTi18iQ7Qm0';
 const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 const rtcConfig = {
