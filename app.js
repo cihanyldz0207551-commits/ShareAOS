@@ -80,7 +80,7 @@ let beamoAirChannel = null;
 let signalingChannel = null;
 
 // ==========================================
-// 3. SUPABASE & WEBRTC AYARLARI
+// 3. SUPABASE & WEBRTC AYARLARI (GÜNCELLENDİ)
 // ==========================================
 const supabaseUrl = 'https://bvbtrehgotptrzplylsv.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ2YnRyZWhnb3RwdHJ6cGx5bHN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI4NjAyNjQsImV4cCI6MjEwODQzNjI2NH0.o_tcJd346EZAUo-t7LWDziTN3AMQZEElSTi18iQ7Qm0';
@@ -117,7 +117,6 @@ function formatBytes(bytes) {
     return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
 }
 
-// Gönderilecek dosya için önbelleğe alınmış önizleme URL'si döndürür (resim/video ise)
 function getFilePreviewUrl(file) {
     if (filePreviewCache.has(file)) return filePreviewCache.get(file);
     if (file.type.startsWith('image/') || file.type.startsWith('video/')) {
@@ -471,7 +470,7 @@ function startQRScanner() {
 }
 
 window.addEventListener('load', () => {
-    resetApp(); // Sayfa yüklendiğinde tüm ekranları sıfırla ve gizle
+    resetApp();
     const urlParams = new URLSearchParams(window.location.search);
     const room = urlParams.get('room');
     if (room) {
@@ -488,8 +487,17 @@ function setupWebRTC() {
     peerConnection = new RTCPeerConnection(rtcConfig);
 
     peerConnection.oniceconnectionstatechange = () => {
-        if (['disconnected', 'failed', 'closed'].includes(peerConnection.iceConnectionState)) {
+        const state = peerConnection.iceConnectionState;
+        console.log("ICE Connection State değişti:", state);
+
+        if (['failed', 'closed'].includes(state)) {
             handleRemoteDisconnect();
+        } else if (state === 'disconnected') {
+            statusText.innerText = "Geçici bağlantı duraklatıldı, bekleniyor...";
+        } else if (state === 'connected') {
+            if (isConnected) {
+                statusText.innerText = "Bağlantı Başarılı! Dosya Gönderebilirsiniz.";
+            }
         }
     };
 
@@ -549,7 +557,7 @@ function setupWebRTC() {
                 const blob = new Blob(receivedBuffers, { type: fileType });
                 const blobUrl = URL.createObjectURL(blob);
                 activeObjectUrls.push(blobUrl); 
-                renderReceivedMedia(fileName, blobUrl, fileType); // MIME Tipi eklendi
+                renderReceivedMedia(fileName, blobUrl, fileType);
                 receiveChannel.send(JSON.stringify({ type: 'file_received_ack' }));
             }
         };
@@ -575,7 +583,6 @@ function appendChatMessage(text, type) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Alınan dosyaları thumbnail + indirme butonuyla render eden fonksiyon
 function renderReceivedMedia(name, url, type) {
     receivedGallery.classList.remove('hidden');
     
@@ -603,11 +610,10 @@ fileInput.addEventListener('change', (e) => {
     fileQueue = [...fileQueue, ...newFiles];
     stagingArea.classList.remove('hidden');
     btnStartTransfer.classList.remove('hidden');
-    renderFileList(); // Seçilenleri ekrana bas (thumbnail önizlemeli)
+    renderFileList();
     fileInput.value = ''; 
 });
 
-// Seçilen dosyaları thumbnail önizlemesiyle listeleyen fonksiyon
 function renderFileList() {
     fileListContainer.innerHTML = '';
     fileQueue.forEach((file, index) => {
@@ -634,9 +640,8 @@ function renderFileList() {
     }
 }
 
-// Seçili dosyayı kuyruktan çıkarma fonksiyonu
 function removeFile(index) {
-    if (isTransferring) return; // Aktarım sırasındaysa silmeyi engelle
+    if (isTransferring) return; 
     const [removed] = fileQueue.splice(index, 1);
     if (removed) revokeFilePreview(removed);
     renderFileList();
@@ -647,7 +652,6 @@ function startTransfer() {
     isTransferring = true; currentFileIndex = 0;
     btnStartTransfer.classList.add('hidden');
     
-    // Aktarım başladığında silme butonlarını gizleyelim (güvenlik için)
     document.querySelectorAll('.btn-remove').forEach(btn => btn.style.display = 'none');
 
     const manifesto = fileQueue.map(f => ({ name: f.name, size: f.size, type: f.type }));
